@@ -1,0 +1,53 @@
+{% schema %}
+{
+  "name": "Featured Trial Product",
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Select a product"
+    }
+  ],
+  "presets": [
+    { "name": "Featured Trial Product" }
+  ]
+}
+{% endschema %}
+
+{% assign product = all_products[section.settings.product] %}
+{% if product %}
+  <div class="featured-product">
+    <h2>{{ product.title }}</h2>
+    <p>{{ product.price | money }}</p>
+    {% if product.featured_media %}
+      <img 
+        src="{{ product.featured_media | image_url: width: 400 }}" 
+        alt="{{ product.title | escape }}" 
+        width="400" 
+        height="{{ product.featured_media.preview_image.height | divided_by: product.featured_media.preview_image.width | times: 400 | round }}"
+      >
+    {% endif %}
+
+    <button id="add-to-cart" data-variant="{{ product.variants.first.id }}">
+      Add to Cart
+    </button>
+    <p id="cart-message" style="display:none;color:green;">Added to cart!</p>
+  </div>
+{% endif %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+  document.getElementById("add-to-cart").addEventListener("click", function(){
+    const variantId = this.dataset.variant;
+    fetch("/cart/add.js", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: variantId, quantity: 1 })
+    })
+    .then(res => res.json())
+    .then(() => {
+      document.getElementById("cart-message").style.display = "block";
+    });
+  });
+});
+</script>
